@@ -87,7 +87,7 @@ class Parser:
     def parse_if(self):
         self.skip_kw("if")
         cond = self.parse_expression()
-        if (!self.is_punc("{")):
+        if (not self.is_punc("{")):
             self.skip_kw("then")
         then = self.parse_expression()
         ret = {"type": "if", "cond": cond, "then" : then}
