@@ -19,8 +19,7 @@ class InStream:
         return ch
     def peek(self):
         if self.pos >= len(self.inp):
-            self.croak("END")
-            return
+            return ''
         return self.inp[self.pos]
     def eof(self):
         return self.peek() == ""

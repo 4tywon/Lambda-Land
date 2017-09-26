@@ -77,7 +77,7 @@ class TokenStream:
         if self.is_id_start(ch):
             return self.read_ident()
         if self.is_punc(ch):
-            return {"type": "punc", "value": self.read_while(self.is_op_char)}
+            return {"type": "punc", "value": self.read_while(self.is_punc)}
         if self.is_op_char(ch):
             return {"type": "op", "value" : self.read_while(self.is_op_char)}
         self.input.croak("Can't Handle: " + ch)
@@ -85,7 +85,7 @@ class TokenStream:
         if self.current != None:
             return self.current
         self.current = self.read_next()
-        return current
+        return self.current
     def nextOne(self):
         token = self.current
         self.current = None
@@ -94,4 +94,6 @@ class TokenStream:
         return self.read_next()
     def eof(self):
         return self.peek() == None
+    def croak(self, msg):
+        self.input.croak(msg)
         

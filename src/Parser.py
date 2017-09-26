@@ -1,4 +1,5 @@
-# UNTESTED
+import Tokenizer
+import InputStream
 class Parser:
     PRECEDENCE = {
         "=": 1,
@@ -9,54 +10,54 @@ class Parser:
         "*": 20, "/": 20, "%": 20,
     }
     
-    FALSE = { type: "bool", value: False }
+    FALSE = { "type": "bool", "value": False }
     
     def __init__(self, inp):
-        self.input = inp # TokenStream
+        self.input = TokenStream(inp + " ") # TokenStream
     
     def is_punc(self, ch):
         tok = self.input.peek()
-        if tok != None and return tok['type'] == 'punc' and (not ch or tok[value] == ch):
+        if tok != None and tok['type'] == 'punc' and (not ch or tok['value'] == ch):
             return tok
         return False
     def is_kw(self, ch):
         tok = self.input.peek()
-        if tok != None and tok['type'] == 'kw' and (not ch or tok[value] == ch):
+        if tok != None and tok['type'] == 'kw' and (not ch or tok['value'] == ch):
             return tok
         return False
     def is_op(self, ch):
         tok = self.input.peek()
-        if tok != None and tok['type'] == 'op' and (not ch or tok[value] == ch):
+        if tok != None and tok['type'] == 'op' and (not ch or tok['value'] == ch):
             return tok
         return False
-    def skip_punc(self ch):
+    def skip_punc(self, ch):
         if (self.is_punc(ch)):
             self.input.nextOne()
         else:
             self.input.croak("Expecting Operator: \"" + str(ch) + "\"")
-    def skip_kw(self ch):
+    def skip_kw(self, ch):
         if (self.is_kw(ch)):
             self.input.nextOne()
         else:
             self.input.croak("Expecting keyword: \"" + str(ch) + "\"")
-    def skip_op(self ch):
+    def skip_op(self, ch):
         if (self.is_op(ch)):
             self.input.nextOne()
         else:
             self.input.croak("Expecting Operator: \"" + str(ch) + "\"")
     def unexpected(self):
         self.input.croak("Idk what this is: " + str(self.input.peek()))
-    def maybe_binary(left, my_prec):
+    def maybe_binary(self, left, my_prec):
         tok = self.is_op('')
         if (tok):
             his_prec = self.PRECEDENCE[tok['value']]
             if his_prec > my_prec:
                 self.input.nextOne()
                 return self.maybe_binary({
-                    "type" : "assign if tok["value"] == "=" else "binary",
+                    "type" : "assign" if tok["value"] == "=" else "binary",
                     "operator": tok["value"],
                     "left" : left,
-                    "right" : self.maybe_binary(parse_atom(), his_prec)
+                    "right" : self.maybe_binary(self.parse_atom(), his_prec)
                 }, my_prec)
         return left
     def delimited(self,start, stop, separator, parser):
@@ -67,7 +68,7 @@ class Parser:
             if self.is_punc(stop):
                 break
             if first:
-                first = false
+                first = False
             else:
                 self.skip_punc(separator)
             if (self.is_punc(stop)):
@@ -76,13 +77,13 @@ class Parser:
         self.skip_punc(stop)
         return a
     def parse_call(self, func):
-        return {"type": "call", "func": func, "args" : self.delimited("(", ")", ",", parse_expression)
+        return {"type": "call", "func": func, "args" : self.delimited("(", ")", ",", self.parse_expression)
                }
     def parse_varname(self):
         name = self.input.nextOne()
         if name["type"] != "var":
             self.input.croak("Expecting variable name")
-        return name.value
+        return name['value']
     
     def parse_if(self):
         self.skip_kw("if")
@@ -97,11 +98,11 @@ class Parser:
         return ret
     
     def parse_lambda(self):
-        return {"type": "lambda", "vars" : self.delimited("(", ")", ",", self.parse_varname)
-               "body": self.parse_expressions()}
+        return {"type": "lambda", "vars" : self.delimited("(", ")", "," , self.parse_varname),
+               "body": self.parse_expression()}
     
     def parse_bool(self):
-        return {"type" : "bool", "value" : self.input.next()["value"] == "true"}
+        return {"type" : "bool", "value" : self.input.nextOne()["value"] == "true"}
     
     def maybe_call(self, expr):
         expr = expr()
@@ -119,14 +120,14 @@ class Parser:
                 return self.parse_if()
             if self.is_kw("true") or self.is_kw("false"):
                 return self.parse_bool()
-            if self.is_kw("lambda") or is_kw("@"):
+            if self.is_kw("lambda") or self.is_kw("@"):
                 self.input.nextOne()
                 return self.parse_lambda()
             tok = self.input.nextOne()
-            if (tok["type"] = "var" or tok["type"] == "num" or tok["type"] = 'str'):
+            if (tok["type"] == "var" or tok["type"] == "num" or tok["type"] == 'str'):
                 return tok
             self.unexpected()
-        return maybe_call(inner)
+        return self.maybe_call(inner)
     def parse_toplevel(self):
         prog = []
         while(not self.input.eof()):
