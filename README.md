@@ -7,4 +7,4 @@ This is the implementation of an interpreter for a simple Turing Complete langua
 
 Written in Python. File extensions for LambdaLanguage Files is .lam
 
-# IN PROGRESS, MORE INSTRUCTIONS TBD
+# ENVIRONMENT IS IN PROGRESS (UNTESTED)
